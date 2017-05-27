@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "679719390498",
+    "firebase_url": "https://makemysketch-7078e.firebaseio.com",
+    "project_id": "makemysketch-7078e",
+    "storage_bucket": "makemysketch-7078e.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:679719390498:android:20ee3294b96c039c",
+        "android_client_info": {
+          "package_name": "com.sketch.makemysketch"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "679719390498-qrvds0hcnofgr5ogfmev3p8d42b2lk68.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDvsI852DdwDLv3nmV_5PpY4IMJynTzJns"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
