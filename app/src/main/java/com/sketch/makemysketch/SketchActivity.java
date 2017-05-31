@@ -60,7 +60,7 @@ public class SketchActivity extends AppCompatActivity {
 
     public void onOrderBtnClick(View v) {
         Context context = v.getContext();
-        Intent intent1 = new Intent(context, InvoicingPay.class);
+        Intent intent1 = new Intent(context, Checkout.class);
         intent1.putExtra(MAP_KEY, map);
         context.startActivity(intent1);
     }

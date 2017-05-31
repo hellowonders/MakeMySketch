@@ -4,20 +4,13 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
-import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.LinearLayout;
-import android.widget.RadioButton;
 import android.widget.Spinner;
-import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
 import com.payu.india.CallBackHandler.OnetapCallback;
 import com.payu.india.Extras.PayUChecksum;
 import com.payu.india.Interfaces.OneClickPaymentListener;
@@ -29,25 +22,33 @@ import com.payu.india.Payu.Payu;
 import com.payu.india.Payu.PayuConstants;
 import com.payu.india.Payu.PayuErrors;
 import com.payu.payuui.Activity.PayUBaseActivity;
+import com.sketch.makemysketch.model.HashMapping;
+import com.sketch.makemysketch.model.OrderDetail;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.springframework.util.StringUtils;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
+import java.net.URI;
 import java.net.URL;
 import java.util.HashMap;
-import java.util.Iterator;
 
 public class InvoicingPay extends AppCompatActivity implements OneClickPaymentListener {
 
-    private static final String MAP_KEY = "map";
+    OrderDetail orderDetail = null;
     private String merchantKey, userCredentials;
 
     // These will hold all the payment parameters
@@ -72,97 +73,12 @@ public class InvoicingPay extends AppCompatActivity implements OneClickPaymentLi
         //TODO Must write below code in your activity to set up initial context for PayU
         Payu.setInstance(this);
 
-        // l    ets set up the tool bar;
-        Toolbar toolBar = (Toolbar) findViewById(R.id.app_bar);
-        toolBar.setTitle("MakeMySketch Checkout");
-        toolBar.setTitleTextColor(Color.DKGRAY);
-        setSupportActionBar(toolBar);
-
         final Intent intent = getIntent();
         Bundle bd = intent.getExtras();
         if (bd != null) {
-            HashMap map = (HashMap) bd.get(MAP_KEY);
-            if (map.get("type").equals("sketch")) {
-                RadioButton radioButton2 = (RadioButton) findViewById(R.id.cod);
-                radioButton2.setVisibility(View.INVISIBLE);
-            }
-
-            Integer price = ((Double) map.get("price")).intValue();
-            TextView amount = (TextView) findViewById(R.id.editTextAmount);
-            amount.setText(price.toString());
-
-            Button payBtn = (Button) findViewById(R.id.btnPayNow);
-            payBtn.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if(validateInput()) {
-                        navigateToBaseActivity(v);
-                    }
-                }
-            });
-
+            orderDetail = (OrderDetail) bd.get("orderDetail");
         }
-    }
-
-    public void onRadioButtonClicked(View view) {
-        // Is the button now checked?
-        boolean checked = ((RadioButton) view).isChecked();
-        TextView onlinePayAmt = (TextView) findViewById(R.id.onlinePayAmt);
-        TextView initialAmt = (TextView) findViewById(R.id.editTextAmount);
-        LinearLayout layout = (LinearLayout) findViewById(R.id.deliveryPayment);
-        // Check which radio button was clicked
-        switch(view.getId()) {
-            case R.id.pay_online:
-                if (checked) {
-                    assert initialAmt != null;
-                    onlinePayAmt.setText("INR " + initialAmt.getText());
-                    layout.setVisibility(View.INVISIBLE);
-                    break;
-                }
-            case R.id.cod:
-                if (checked) {
-                    assert initialAmt != null;
-                    Integer cod_online_price = Integer.valueOf(initialAmt.getText().toString());
-                    Integer cod_online_updated_price = ((Double)(.20 * cod_online_price)).intValue();
-                    Integer deliveryPrice =  cod_online_price - cod_online_updated_price + 300;
-                    onlinePayAmt.setText("INR " + cod_online_updated_price.toString());
-                    TextView deliveryPayAmt = (TextView) findViewById(R.id.deliveryPayAmt);
-                    deliveryPayAmt.setText("INR " + deliveryPrice.toString());
-                    layout.setVisibility(View.VISIBLE);
-                    break;
-                }
-        }
-    }
-
-    private boolean validateInput() {
-        EditText name = (EditText) findViewById(R.id.editTextName);
-        EditText phone = (EditText) findViewById(R.id.editTextPhone);
-        EditText email = (EditText) findViewById(R.id.editTextEmail);
-        EditText address = (EditText) findViewById(R.id.editTextAddressLine1);
-        RadioButton radioButton = (RadioButton) findViewById(R.id.pay_online);
-        RadioButton radioButton2 = (RadioButton) findViewById(R.id.cod);
-
-        if (StringUtils.isEmpty(name.getText().toString())) {
-            Toast.makeText(InvoicingPay.this, "Full Name Required", Toast.LENGTH_SHORT).show();
-            return false;
-        } else if (StringUtils.isEmpty(phone.getText().toString())) {
-            Toast.makeText(InvoicingPay.this, "Phone Number Required", Toast.LENGTH_SHORT).show();
-            return false;
-        } else if (StringUtils.isEmpty(email.getText().toString())) {
-            boolean check;
-            check = android.util.Patterns.EMAIL_ADDRESS.matcher(email.getText().toString()).matches();
-            if(!check) {
-                Toast.makeText(InvoicingPay.this, "Email Required", Toast.LENGTH_SHORT).show();
-                return false;
-            }
-        } else if (StringUtils.isEmpty(address.getText().toString())) {
-            Toast.makeText(InvoicingPay.this, "Delivery Address Required", Toast.LENGTH_SHORT).show();
-            return false;
-        } else if (!radioButton.isChecked() && !radioButton2.isChecked()) {
-            Toast.makeText(InvoicingPay.this, "Payment Option Not Selected", Toast.LENGTH_SHORT).show();
-            return false;
-        }
-            return true;
+        navigateToBaseActivity(orderDetail);
     }
 
     @Override
@@ -195,20 +111,12 @@ public class InvoicingPay extends AppCompatActivity implements OneClickPaymentLi
     /**
      * This method prepares all the payments params to be sent to PayuBaseActivity.java
      */
-    public void navigateToBaseActivity(View view) {
+    public void navigateToBaseActivity(OrderDetail orderDetail) {
 
         merchantKey = "b8x5ys";
-        String amount = ((TextView) findViewById(R.id.onlinePayAmt)).getText().toString();
-        amount  = amount.split(" ")[1];
-        String email = ((EditText) findViewById(R.id.editTextEmail)).getText().toString();
-
-        int environment;
-        String TEST_ENVIRONMENT = getResources().getString(R.string.production);
-        String value = TEST_ENVIRONMENT;
-        if (value.equals(TEST_ENVIRONMENT))
-            environment = PayuConstants.STAGING_ENV;
-        else
-            environment = PayuConstants.PRODUCTION_ENV;
+        String amount = orderDetail.getPaidAmt();
+        String email =  orderDetail.getEmail();
+        int environment = PayuConstants.PRODUCTION_ENV;
 
         userCredentials = merchantKey + ":" + email;
 
@@ -220,31 +128,31 @@ public class InvoicingPay extends AppCompatActivity implements OneClickPaymentLi
          */
         mPaymentParams.setKey(merchantKey);
         mPaymentParams.setAmount(amount);
-        mPaymentParams.setProductInfo("product_info");
-        mPaymentParams.setFirstName("firstname");
-        mPaymentParams.setEmail("xyz@gmail.com");
+        mPaymentParams.setProductInfo(orderDetail.getImageName());
+        mPaymentParams.setFirstName(orderDetail.getName());
+        mPaymentParams.setEmail(orderDetail.getEmail());
 
         /*
         * Transaction Id should be kept unique for each transaction.
         * */
-        mPaymentParams.setTxnId("" + System.currentTimeMillis());
-
+        //mPaymentParams.setTxnId("" + System.currentTimeMillis());
+        mPaymentParams.setTxnId(orderDetail.getOrderId());
         /**
          * Surl --> Success url is where the transaction response is posted by PayU on successful transaction
          * Furl --> Failre url is where the transaction response is posted by PayU on failed transaction
          */
-        mPaymentParams.setSurl("https://payu.herokuapp.com/success");
-        mPaymentParams.setFurl("https://payu.herokuapp.com/failure");
+//        mPaymentParams.setSurl("https://payu.herokuapp.com/success");
+//        mPaymentParams.setFurl("https://payu.herokuapp.com/failure");
 
         /*
          * udf1 to udf5 are options params where you can pass additional information related to transaction.
          * If you don't want to use it, then send them as empty string like, udf1=""
          * */
-        mPaymentParams.setUdf1("udf1");
-        mPaymentParams.setUdf2("udf2");
-        mPaymentParams.setUdf3("udf3");
-        mPaymentParams.setUdf4("udf4");
-        mPaymentParams.setUdf5("udf5");
+        mPaymentParams.setUdf1("");
+        mPaymentParams.setUdf2("");
+        mPaymentParams.setUdf3("");
+        mPaymentParams.setUdf4("");
+        mPaymentParams.setUdf5("");
 
         /**
          * These are used for store card feature. If you are not using it then user_credentials = "default"
@@ -368,32 +276,8 @@ public class InvoicingPay extends AppCompatActivity implements OneClickPaymentLi
      * @param mPaymentParams payments params used for hash generation
      */
     public void generateHashFromServer(PaymentParams mPaymentParams) {
-        //nextButton.setEnabled(false); // lets not allow the user to click the button again and again.
-
-        // lets create the post params
-        StringBuffer postParamsBuffer = new StringBuffer();
-        postParamsBuffer.append(concatParams(PayuConstants.KEY, mPaymentParams.getKey()));
-        postParamsBuffer.append(concatParams(PayuConstants.AMOUNT, mPaymentParams.getAmount()));
-        postParamsBuffer.append(concatParams(PayuConstants.TXNID, mPaymentParams.getTxnId()));
-        postParamsBuffer.append(concatParams(PayuConstants.EMAIL, null == mPaymentParams.getEmail() ? "" : mPaymentParams.getEmail()));
-        postParamsBuffer.append(concatParams(PayuConstants.PRODUCT_INFO, mPaymentParams.getProductInfo()));
-        postParamsBuffer.append(concatParams(PayuConstants.FIRST_NAME, null == mPaymentParams.getFirstName() ? "" : mPaymentParams.getFirstName()));
-        postParamsBuffer.append(concatParams(PayuConstants.UDF1, mPaymentParams.getUdf1() == null ? "" : mPaymentParams.getUdf1()));
-        postParamsBuffer.append(concatParams(PayuConstants.UDF2, mPaymentParams.getUdf2() == null ? "" : mPaymentParams.getUdf2()));
-        postParamsBuffer.append(concatParams(PayuConstants.UDF3, mPaymentParams.getUdf3() == null ? "" : mPaymentParams.getUdf3()));
-        postParamsBuffer.append(concatParams(PayuConstants.UDF4, mPaymentParams.getUdf4() == null ? "" : mPaymentParams.getUdf4()));
-        postParamsBuffer.append(concatParams(PayuConstants.UDF5, mPaymentParams.getUdf5() == null ? "" : mPaymentParams.getUdf5()));
-        postParamsBuffer.append(concatParams(PayuConstants.USER_CREDENTIALS, mPaymentParams.getUserCredentials() == null ? PayuConstants.DEFAULT : mPaymentParams.getUserCredentials()));
-
-        // for offer_key
-        if (null != mPaymentParams.getOfferKey())
-            postParamsBuffer.append(concatParams(PayuConstants.OFFER_KEY, mPaymentParams.getOfferKey()));
-
-        String postParams = postParamsBuffer.charAt(postParamsBuffer.length() - 1) == '&' ? postParamsBuffer.substring(0, postParamsBuffer.length() - 1).toString() : postParamsBuffer.toString();
-
-        // lets make an api call
         GetHashesFromServerTask getHashesFromServerTask = new GetHashesFromServerTask();
-        getHashesFromServerTask.execute(postParams);
+        getHashesFromServerTask.execute(orderDetail);
     }
 
 
@@ -404,7 +288,7 @@ public class InvoicingPay extends AppCompatActivity implements OneClickPaymentLi
     /**
      * This AsyncTask generates hash from server.
      */
-    private class GetHashesFromServerTask extends AsyncTask<String, String, PayuHashes> {
+    private class GetHashesFromServerTask extends AsyncTask<OrderDetail, String, PayuHashes> {
         private ProgressDialog progressDialog;
 
         @Override
@@ -416,38 +300,23 @@ public class InvoicingPay extends AppCompatActivity implements OneClickPaymentLi
         }
 
         @Override
-        protected PayuHashes doInBackground(String... postParams) {
+        protected PayuHashes doInBackground(OrderDetail...orderDetail) {
             PayuHashes payuHashes = new PayuHashes();
             try {
 
-                //TODO Below url is just for testing purpose, merchant needs to replace this with their server side hash generation url
-                URL url = new URL("https://payu.herokuapp.com/get_hash");
+                String url = "https://makemysketch-prateekmehta.rhcloud.com/rest/get_hash";
+                RestTemplate restTemplate = new RestTemplate();
+                MultiValueMap<String, String> httpHeaders = new LinkedMultiValueMap<String, String>();
+                httpHeaders.add("Content-Type", "application/json");
 
-                // get the payuConfig first
-                String postParam = postParams[0];
+                Gson gson = new Gson();
+                HttpEntity<String> httpEntity = new HttpEntity<String>(gson.toJson(orderDetail[0]), httpHeaders);
+                ResponseEntity<HashMapping> responseEntity = restTemplate.exchange(new URI (url), HttpMethod.POST, httpEntity, HashMapping.class);
+                HashMapping hashes = (HashMapping) responseEntity.getBody();
 
-                byte[] postParamsByte = postParam.getBytes("UTF-8");
-
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setRequestMethod("POST");
-                conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-                conn.setRequestProperty("Content-Length", String.valueOf(postParamsByte.length));
-                conn.setDoOutput(true);
-                conn.getOutputStream().write(postParamsByte);
-
-                InputStream responseInputStream = conn.getInputStream();
-                StringBuffer responseStringBuffer = new StringBuffer();
-                byte[] byteContainer = new byte[1024];
-                for (int i; (i = responseInputStream.read(byteContainer)) != -1; ) {
-                    responseStringBuffer.append(new String(byteContainer, 0, i));
-                }
-
-                JSONObject response = new JSONObject(responseStringBuffer.toString());
-
-                Iterator<String> payuHashIterator = response.keys();
-                while (payuHashIterator.hasNext()) {
-                    String key = payuHashIterator.next();
-                    switch (key) {
+                Field[] payuHashIteratorArr = hashes.getClass().getDeclaredFields();
+                for (Field key : payuHashIteratorArr) {
+                    switch (key.getName()) {
                         //TODO Below three hashes are mandatory for payment flow and needs to be generated at merchant server
                         /**
                          * Payment hash is one of the mandatory hashes that needs to be generated from merchant's server side
@@ -457,7 +326,7 @@ public class InvoicingPay extends AppCompatActivity implements OneClickPaymentLi
                          *
                          */
                         case "payment_hash":
-                            payuHashes.setPaymentHash(response.getString(key));
+                            payuHashes.setPaymentHash(hashes.getPayment_hash());
                             break;
                         /**
                          * vas_for_mobile_sdk_hash is one of the mandatory hashes that needs to be generated from merchant's server side
@@ -469,7 +338,7 @@ public class InvoicingPay extends AppCompatActivity implements OneClickPaymentLi
                          *
                          */
                         case "vas_for_mobile_sdk_hash":
-                            payuHashes.setVasForMobileSdkHash(response.getString(key));
+                            payuHashes.setVasForMobileSdkHash(hashes.getVas_for_mobile_sdk_hash());
                             break;
                         /**
                          * payment_related_details_for_mobile_sdk_hash is one of the mandatory hashes that needs to be generated from merchant's server side
@@ -481,7 +350,7 @@ public class InvoicingPay extends AppCompatActivity implements OneClickPaymentLi
                          *
                          */
                         case "payment_related_details_for_mobile_sdk_hash":
-                            payuHashes.setPaymentRelatedDetailsForMobileSdkHash(response.getString(key));
+                            payuHashes.setPaymentRelatedDetailsForMobileSdkHash(hashes.getPayment_related_details_for_mobile_sdk_hash());
                             break;
 
                         //TODO Below hashes only needs to be generated if you are using Store card feature
@@ -495,7 +364,7 @@ public class InvoicingPay extends AppCompatActivity implements OneClickPaymentLi
                          *
                          */
                         case "delete_user_card_hash":
-                            payuHashes.setDeleteCardHash(response.getString(key));
+                            payuHashes.setDeleteCardHash(hashes.getDelete_user_card_hash());
                             break;
                         /**
                          * get_user_cards_hash is used while fetching all the cards corresponding to a user.
@@ -507,7 +376,7 @@ public class InvoicingPay extends AppCompatActivity implements OneClickPaymentLi
                          *
                          */
                         case "get_user_cards_hash":
-                            payuHashes.setStoredCardsHash(response.getString(key));
+                            payuHashes.setStoredCardsHash(hashes.getGet_user_cards_hash());
                             break;
                         /**
                          * edit_user_card_hash is used while editing details of existing stored card.
@@ -519,7 +388,7 @@ public class InvoicingPay extends AppCompatActivity implements OneClickPaymentLi
                          *
                          */
                         case "edit_user_card_hash":
-                            payuHashes.setEditCardHash(response.getString(key));
+                            payuHashes.setEditCardHash(hashes.getEdit_user_card_hash());
                             break;
                         /**
                          * save_user_card_hash is used while saving card to the vault
@@ -531,7 +400,7 @@ public class InvoicingPay extends AppCompatActivity implements OneClickPaymentLi
                          *
                          */
                         case "save_user_card_hash":
-                            payuHashes.setSaveCardHash(response.getString(key));
+                            payuHashes.setSaveCardHash(hashes.getSave_user_card_hash());
                             break;
 
                         //TODO This hash needs to be generated if you are using any offer key
@@ -545,20 +414,13 @@ public class InvoicingPay extends AppCompatActivity implements OneClickPaymentLi
                          *
                          */
                         case "check_offer_status_hash":
-                            payuHashes.setCheckOfferStatusHash(response.getString(key));
+                            payuHashes.setCheckOfferStatusHash(hashes.getCheck_offer_status_hash());
                             break;
                         default:
                             break;
                     }
                 }
-
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            } catch (ProtocolException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (JSONException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
             return payuHashes;
@@ -584,7 +446,6 @@ public class InvoicingPay extends AppCompatActivity implements OneClickPaymentLi
         intent.putExtra(PayuConstants.PAYU_CONFIG, payuConfig);
         intent.putExtra(PayuConstants.PAYMENT_PARAMS, mPaymentParams);
         intent.putExtra(PayuConstants.PAYU_HASHES, payuHashes);
-        intent.putExtra(PayuConstants.SALT, "3FJCM10P");
 
         //Lets fetch all the one click card tokens first
         fetchMerchantHashes(intent);

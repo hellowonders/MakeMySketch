@@ -43,11 +43,11 @@ public class ItemDisplay extends AppCompatActivity {
             String description = map.get("description").toString();
             String size = map.get("size").toString();
             String quality = map.get("quality").toString();
-            price = ((Double) map.get("price")).intValue();
-            newPrice = price + ((Double) map.get("framingPrice")).intValue();
+            price = (Integer) map.get("price");
+            newPrice = price + (Integer) map.get("framingPrice");
             String colors = map.get("colors").toString();
             String type = map.get("type").toString();
-            Integer quantity = ((Double) map.get("quantity")).intValue();
+            Integer quantity = (Integer) map.get("quantity");
 
             if (quantity < 1)
                 orderButton.setVisibility(View.INVISIBLE);
@@ -66,12 +66,12 @@ public class ItemDisplay extends AppCompatActivity {
                 @Override
                 public void onClick(View v) {
                     if (validateFraming()) {
-                        Intent intent1 = new Intent(ItemDisplay.this, InvoicingPay.class);
+                        Intent intent1 = new Intent(ItemDisplay.this, Checkout.class);
                         RadioButton rBtn = (RadioButton) findViewById(R.id.framed);
                         if (rBtn.isChecked())
-                            map.put("price", new Double(newPrice));
+                            map.put("price", newPrice);
                         else
-                            map.put("price", new Double(price));
+                            map.put("price", price);
                         intent1.putExtra(MAP_KEY, map);
                         startActivity(intent1);
                     }
@@ -91,7 +91,7 @@ public class ItemDisplay extends AppCompatActivity {
                 }
             case R.id.framed:
                 if (checked) {
-                    newPrice = price + ((Double) map.get("framingPrice")).intValue();
+                    newPrice = price + ((Integer) map.get("framingPrice"));
                     itemPriceView.setText("Price : INR " + newPrice.toString());
                     break;
                 }

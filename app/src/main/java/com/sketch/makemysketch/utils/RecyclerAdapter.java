@@ -9,11 +9,11 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.google.gson.internal.LinkedTreeMap;
 import com.sketch.makemysketch.ItemDisplay;
 import com.sketch.makemysketch.R;
 import com.squareup.picasso.Picasso;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 
 /**
@@ -50,7 +50,7 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
     public static class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         private ImageView mItemImage;
         private TextView mItemText;
-        private LinkedTreeMap map;
+        private LinkedHashMap map;
         private ImageView sold_label;
 
         private static final String MAP_KEY = "map";
@@ -64,8 +64,8 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
         }
 
         public void bindData(Object item) {
-            this.map = (LinkedTreeMap) item;
-            Integer quantity = ((Double) map.get("quantity")).intValue();
+            this.map = (LinkedHashMap) item;
+            Integer quantity = (Integer) map.get("quantity");
             if (quantity > 0) {
                 sold_label.setVisibility(View.INVISIBLE);
             } else {

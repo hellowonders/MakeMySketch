@@ -38,6 +38,7 @@
             android:theme="@style/AppTheme" />
         <activity android:name=".InvoicingPay" />
         <activity android:name=".SketchActivity" />
+        <activity android:name=".Checkout"></activity>
     </application>
 
 </manifest>
