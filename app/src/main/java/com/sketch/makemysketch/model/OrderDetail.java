@@ -1,5 +1,7 @@
 package com.sketch.makemysketch.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.io.Serializable;
 
 public class OrderDetail implements Serializable {
@@ -16,8 +18,12 @@ public class OrderDetail implements Serializable {
 	private String paidAmt;
 	private String deliveryAmt;
 	private String transactionStatus;
+    @JsonIgnore
+    private String imageUri;
 
 	public enum TransationStatus{SUCCESS, FAILED, INPROGRESS};
+    public enum DeliveryType{ONLINE, COD};
+    public enum OrderType{SKETCH, PAINTING};
 	/**
 	 * @return the transactionStatus
 	 */
@@ -171,6 +177,4 @@ public class OrderDetail implements Serializable {
     public void setImageUri(String imageUri) {
         this.imageUri = imageUri;
     }
-
-    private String imageUri;
 }

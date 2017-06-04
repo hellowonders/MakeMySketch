@@ -38,7 +38,7 @@ public class SketchActivity extends AppCompatActivity {
         map = new HashMap();
         ImageView imageView = (ImageView) findViewById(R.id.header_image);
         map.put("type", "sketch");
-        map.put("price", new Double(500));
+        map.put("price", new Integer(500));
     }
 
     public void uploadImage(View view) {

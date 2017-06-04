@@ -52,7 +52,7 @@ public class Checkout extends AppCompatActivity {
                 radioButton2.setVisibility(View.INVISIBLE);
             }
 
-            Integer price = ((Double) map.get("price")).intValue();
+            Integer price = (Integer) map.get("price");
             TextView amount = (TextView) findViewById(R.id.editTextAmount);
             amount.setText(price.toString());
 
@@ -62,6 +62,7 @@ public class Checkout extends AppCompatActivity {
     public void onClickBtnPayNow(View v) {
         if (validateInput()) {
             orderDetail.setOrderId("" + new java.util.Date().getTime());
+            orderDetail.setTransactionStatus(OrderDetail.TransationStatus.INPROGRESS.toString());
             final Context context = v.getContext();
             final Intent intent = new Intent(Checkout.this, InvoicingPay.class);
             intent.putExtra("orderDetail", orderDetail);
@@ -69,7 +70,7 @@ public class Checkout extends AppCompatActivity {
             if (map.get("type").equals("sketch")) {
                 if (map.get("imageUri") != null) {
                     String[] temp = ((Uri) map.get("imageUri")).getPath().split("/");
-                    orderDetail.setOrderType("sketch");
+                    orderDetail.setOrderType(OrderDetail.OrderType.SKETCH.toString());
                     orderDetail.setImageName(temp[temp.length - 1]);
                     orderDetail.setImageUri(((Uri) map.get("imageUri")).getPath());
 
@@ -90,7 +91,7 @@ public class Checkout extends AppCompatActivity {
                     }.execute();
                 }
             } else {
-                orderDetail.setOrderType("painting");
+                orderDetail.setOrderType(OrderDetail.OrderType.PAINTING.toString());
                 orderDetail.setImageName(map.get("name").toString());
                 context.startActivity(intent);
             }
@@ -102,6 +103,7 @@ public class Checkout extends AppCompatActivity {
         boolean checked = ((RadioButton) view).isChecked();
         TextView onlinePayAmt = (TextView) findViewById(R.id.onlinePayAmt);
         TextView initialAmt = (TextView) findViewById(R.id.editTextAmount);
+        orderDetail.setTotalAmt(initialAmt.getText().toString());
         LinearLayout layout = (LinearLayout) findViewById(R.id.deliveryPayment);
         // Check which radio button was clicked
         switch (view.getId()) {
@@ -109,8 +111,9 @@ public class Checkout extends AppCompatActivity {
                 if (checked) {
                     assert initialAmt != null;
                     onlinePayAmt.setText("INR " + initialAmt.getText());
-                    orderDetail.setDeliveryType("online");
+                    orderDetail.setDeliveryType(OrderDetail.DeliveryType.ONLINE.toString());
                     orderDetail.setPaidAmt(initialAmt.getText().toString());
+                    orderDetail.setDeliveryAmt("0");
                     layout.setVisibility(View.INVISIBLE);
                     break;
                 }
@@ -123,7 +126,7 @@ public class Checkout extends AppCompatActivity {
                     onlinePayAmt.setText("INR " + cod_online_updated_price.toString());
                     TextView deliveryPayAmt = (TextView) findViewById(R.id.deliveryPayAmt);
                     deliveryPayAmt.setText("INR " + deliveryPrice.toString());
-                    orderDetail.setDeliveryType("cod");
+                    orderDetail.setDeliveryType(OrderDetail.DeliveryType.COD.toString());
                     orderDetail.setPaidAmt(cod_online_updated_price.toString());
                     orderDetail.setDeliveryAmt(deliveryPrice.toString());
                     layout.setVisibility(View.VISIBLE);
