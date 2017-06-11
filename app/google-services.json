@@ -8,9 +8,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:679719390498:android:20ee3294b96c039c",
+        "mobilesdk_app_id": "1:679719390498:android:3547bf3548246735",
         "android_client_info": {
-          "package_name": "com.sketch.makemysketch"
+          "package_name": "com.makemysketch.app"
         }
       },
       "oauth_client": [

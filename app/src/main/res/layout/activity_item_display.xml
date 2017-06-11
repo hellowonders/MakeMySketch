@@ -99,7 +99,9 @@
                         android:layout_width="fill_parent"
                         android:layout_height="wrap_content"
                         android:padding="10dp"
-                        android:orientation="vertical">
+                        android:orientation="vertical"
+                        android:id="@+id/radio_group_frame">
+
                         <RadioButton android:id="@+id/unframed"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"

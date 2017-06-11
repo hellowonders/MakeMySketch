@@ -9,7 +9,7 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     android:background="@color/cardview_dark_background"
-    tools:context="com.sketch.makemysketch.Display_Inventory">
+    tools:context="com.makemysketch.app.Display_Inventory">
 
    <android.support.v7.widget.RecyclerView
        android:id="@+id/recycler_view"

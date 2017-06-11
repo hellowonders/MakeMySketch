@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.sketch.makemysketch">
+    package="com.makemysketch.app">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -38,7 +38,12 @@
             android:theme="@style/AppTheme" />
         <activity android:name=".InvoicingPay" />
         <activity android:name=".SketchActivity" />
-        <activity android:name=".Checkout"></activity>
+        <activity android:name=".Checkout" />
+        <activity android:name=".TransactionStatus" />
+        <activity android:name=".AboutUs" />
+        <activity android:name=".Contact" />
+        <activity android:name=".Terms" />
+        <activity android:name=".Sketch_Interceptor"></activity>
     </application>
 
 </manifest>
